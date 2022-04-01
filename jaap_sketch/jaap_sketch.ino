@@ -2,7 +2,7 @@
 int buttonPin = 2; // button zit op digitale pin 2
 int amtLEDs = 8; // hoeveel LED groepen totaal
 int startLEDpin = 6; // op welke pin beginnen we met uitsturen
-int period = 1; // periode in seconden
+int period = 2; // periode in seconden
 
 // niet in te stellen parameters
 unsigned long startMillis;
@@ -13,6 +13,7 @@ int lastCounter;
 int countBackFrom;
 int buttonState;
 int lastButtonState;
+int curLEDsON;
 
 void setup() {
   Serial.begin(9600); // seriele communicatie 9600 bits/s
@@ -31,25 +32,26 @@ void loop() {
   if (buttonState != lastButtonState) {
     if (buttonState == LOW) {
       startMillis = millis();
-      } 
+    }
     else {
       // wanneer HIGH dan is er losgelaten
-      startMillis = millis();
       countBackFrom = lastCounter;
-
+      startMillis = millis();
     }
   }
 
   // bij button PRESS
-  if ((buttonState == LOW) && (counter < amtLEDs)) {
+  if ((buttonState == LOW) && (curLEDsON < amtLEDs)) {
     currentMillis = millis() - startMillis;
-    counter = currentMillis / 1000;
+    counter = currentMillis / (period*1000);
 
     if (counter != lastCounter) {
       // where the magic happens om omhoog te gaan
-      Serial.println(counter);
+      //Serial.println(counter);
+      curLEDsON ++;
+      Serial.println(curLEDsON);
       
-      int LEDaan = startLEDpin + (counter-1);
+      int LEDaan = startLEDpin + (curLEDsON-1);
       digitalWrite(LEDaan, HIGH);
     }
     
@@ -58,15 +60,17 @@ void loop() {
 
 
   // bij button LOSLAAT
-    if ((buttonState == HIGH) && (lastCounter > 0)) {
+    if ((buttonState == HIGH) && (curLEDsON > 0)) {
     currentMillis = millis() - startMillis;
-    counter = countBackFrom - (currentMillis / 1000);
+    counter = currentMillis / (period*1000);
 
       if (counter != lastCounter) {
         // where the magic happens om omlaag te gaan
-        Serial.println(counter);
+        
+        curLEDsON --;
+        Serial.println(curLEDsON);
 
-        int LEDuit = (counter + startLEDpin);
+        int LEDuit = (curLEDsON + startLEDpin);
         digitalWrite(LEDuit, LOW);
     }
     
